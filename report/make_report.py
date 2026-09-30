@@ -260,21 +260,39 @@ def main() -> None:
         f"The calendar-time coefficient is the secular drift: <b>"
         f"{day['drift_per_100_days']:+.4f} log-units per 100 days</b>, about "
         f"{100 * (math.exp(day['coef']['t'] * 365.25) - 1):+.1f}% a year, on top of everything the "
-        "market index explains. It is what makes the Nov&ndash;Dec level right; without it the "
-        "model predicts the average of its training window and comes in 2.3% low on the "
-        "Sep&ndash;Oct holdout &mdash; and further out still on a window two months past the "
-        "training data. "
+        "market index explains. It is what makes the Nov&ndash;Dec level right. Zero that one "
+        "coefficient and the same model, refitted, predicts the average of its training window "
+        "instead: on the Sep&ndash;Oct holdout the median bias goes from &minus;0.51% to "
+        "&minus;2.40% and MedAPE more than doubles, from 1.06% to 2.44%. A window two months past "
+        "the training data, like the real one, is further out still. "
         "Out-of-fold residuals are used to fit it because in-sample GBM residuals are shrunk and "
         "would bias the drift toward zero.")]
     story += [para(
         "The specification was chosen by backtesting the daily level series on its own "
-        "(<font face='Courier'>experiments/day_level_backtest.py</font>): roll an origin forward, "
-        "forecast the next 30 and 61 days, score. This beat every richer alternative tried "
-        "&mdash; adding day-of-week, day-of-month, a quadratic market term, a market&times;quote "
-        "interaction, and exponential recency weighting all made the forecast worse. At the most "
-        "recent origin, level RMSE is 0.008 at both 30 and 61 days: the error does not grow with "
-        "horizon, which is the evidence that the drift is genuinely linear rather than a local "
-        "slope that happens to fit.")]
+        "(<font face='Courier'>experiments/day_level_backtest.py</font>): roll an origin forward "
+        "every week, fit on everything before it, forecast the next 30 and 61 days, score. Three "
+        "things come out of it, all quoted below at 61 days &mdash; the real horizon &mdash; and "
+        "averaged over the origins with seven months or more of history, which are the ones that "
+        "resemble the real task.")]
+    story += bullets([
+        "<b>Calendar time is doing the work.</b> Level RMSE 0.0102 with it, 0.027&ndash;0.029 "
+        "without &mdash; a factor of three, and nothing else recovers it.",
+        "<b>Day-of-week and day-of-month belong in the trees, not here.</b> Adding them to the "
+        "day model wins on the average over all twenty origins (0.0124 against 0.0197), but that "
+        "average is carried by the June&ndash;July origins where every specification is poor. At "
+        "the realistic origins they are the worst of the set (0.0130 against 0.0102), and the gap "
+        "opens up with horizon &mdash; at 30 days they are level with it. Their coefficients are "
+        "not stable enough to carry two months.",
+        "<b>The quote term is a genuine coin flip.</b> Dropping it scores 0.0098 against 0.0102 "
+        "at the realistic origins, and 0.0118 against 0.0116 on the median over all of them. It "
+        "is kept because it is strongly significant in-sample and costs nothing either way: "
+        "November and December sit almost exactly at the training mean of the quote series, so it "
+        "moves the final level by about 0.02%.",
+    ])
+    story += [para(
+        "The error also does not grow with horizon &mdash; 0.0105 at 30 days against 0.0102 at 61 "
+        "&mdash; which is the evidence that the drift is a genuine linear trend rather than a "
+        "local slope that happens to fit the end of the training window.")]
     story += [figure("day_level.png",
                      "The grey line is the observed daily level, the dark line the fitted day "
                      "model, the orange line the same four coefficients applied to Nov-Dec using "

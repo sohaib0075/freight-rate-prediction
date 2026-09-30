@@ -111,10 +111,14 @@ CROSS_SECTION = DATE_BLIND + [
 ]
 
 # Three day-level drivers, all entered linearly.  Chosen by backtesting the
-# daily level series on its own (roll an origin forward, forecast the next
-# 30/61 days): this beats every richer specification tried, including ones
-# adding day-of-week, a quadratic market term, a market x quote interaction, or
-# exponential recency weighting.
+# daily level series on its own - roll an origin forward every week, forecast
+# the next 30 and 61 days (``experiments/day_level_backtest.py``).  Measured at
+# 61 days over the origins with seven months or more of history: 0.0102 here,
+# 0.027-0.029 with calendar time dropped, 0.0130 with day-of-week and
+# day-of-month added back into this regression rather than left to the trees.
+# The quote term itself is a wash (0.0098 without it) and is kept because it is
+# strongly significant in-sample and moves the Nov-Dec level by ~0.02% either
+# way, November and December sitting at the training mean of that series.
 DAY_TERMS = ["log_market_index_daily", "quote_signal_daily", "t"]
 
 
