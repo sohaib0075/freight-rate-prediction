@@ -62,6 +62,12 @@ SPECS = {
 
 
 def daily_level(refresh: bool) -> pd.DataFrame:
+    """The daily level series, plus the two market series it is regressed on.
+
+    Everything the backtest needs is cached in one small table, so a fresh
+    clone can reproduce the specification choice without the raw CSVs and
+    without the several-minute out-of-fold fit.  ``--refresh`` rebuilds it.
+    """
     if CACHE.is_file() and not refresh:
         return pd.read_csv(CACHE, parse_dates=["date"]).set_index("date")
 
@@ -69,11 +75,16 @@ def daily_level(refresh: bool) -> pd.DataFrame:
     dev = F.transform(train_raw, F.build_reference([train_raw, valid_raw]))
     y = FreightRateModel.target(dev)
     model = FreightRateModel()
-    kept = dev[model._flag_inliers(dev, y)].reset_index(drop=True)
-    y_kept = y[model._flag_inliers(dev, y)]
+    inliers = model._flag_inliers(dev, y)
+    kept, y_kept = dev[inliers].reset_index(drop=True), y[inliers]
     residual = y_kept - model._oof(kept, y_kept, CROSS_SECTION, model.n_rounds, seed=1)
+
     level = (pd.DataFrame({"date": kept["date"].to_numpy(), "r": residual})
              .groupby("date")["r"].agg(["mean", "size"]))
+    pooled = pd.concat([train_raw, valid_raw])
+    level["market_index"] = pooled.groupby("date")["market_index"].mean().reindex(level.index)
+    level["quote_signal"] = pooled.groupby("date")["quote_signal"].mean().reindex(level.index)
+
     CACHE.parent.mkdir(parents=True, exist_ok=True)
     level.to_csv(CACHE)
     return level
@@ -86,7 +97,6 @@ def main() -> None:
     args = parser.parse_args()
 
     level = daily_level(args.refresh)
-    pooled = pd.concat(D.prepare(Path("data")))
 
     idx = level.index
     t = (idx - F.ORIGIN).days.to_numpy(dtype=float)
@@ -94,8 +104,8 @@ def main() -> None:
     dow = idx.dayofweek.to_numpy()
     dow_dummies = [(dow == j) * 1.0 for j in range(1, 7)]
     columns = {
-        "mi": np.log(pooled.groupby("date")["market_index"].mean().reindex(idx).to_numpy()),
-        "q": pooled.groupby("date")["quote_signal"].mean().reindex(idx).to_numpy(),
+        "mi": np.log(level["market_index"].to_numpy()),
+        "q": level["quote_signal"].to_numpy(),
         "dom": idx.day.to_numpy(dtype=float),
         "t": t,
     }
