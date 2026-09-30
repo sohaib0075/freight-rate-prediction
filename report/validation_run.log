@@ -1,0 +1,11 @@
+forward holdout: train < 2025-09-01 (38,477 rows), test >= 2025-09-01 (9,523 rows)
+Sep-Oct          MedAPE 1.064%  MAPE 3.790%  MedAE $ 19.80  MAE $  86.25  R2  0.830  day-rmse 0.0089  within 0.0088  bias -0.505%
+
+rolling origin, one month at a time:
+  Jul            MedAPE 1.680%  MAPE 4.302%  MedAE $ 32.16  MAE $ 105.86  R2  0.827  day-rmse 0.0238  within 0.0093  bias +0.261%
+  Aug            MedAPE 3.723%  MAPE 7.088%  MedAE $ 66.68  MAE $ 155.96  R2  0.821  day-rmse 0.0242  within 0.0315  bias +2.220%
+  Sep            MedAPE 1.008%  MAPE 3.278%  MedAE $ 18.68  MAE $  81.15  R2  0.839  day-rmse 0.0079  within 0.0087  bias -0.300%
+  Oct            MedAPE 1.091%  MAPE 4.268%  MedAE $ 20.56  MAE $  90.80  R2  0.822  day-rmse 0.0091  within 0.0088  bias -0.568%
+rolling mean : {'MedAPE_%': 1.8757, 'MAPE_%': 4.7339, 'MedAE': 34.5216, 'MAE': 108.4442, 'R2': 0.8272, 'day_level_rmse': 0.0163, 'within_day_MedAE': 0.0146}
+
+wrote report/validation_metrics.json

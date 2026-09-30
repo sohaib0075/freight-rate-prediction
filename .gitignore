@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+.venv/
+venv/
+
+# The supplied files as downloaded.  data/ holds byte-identical copies under
+# the names the task's own instructions use, so these are not tracked twice.
+/train-test.csv
+/validation.csv
+/validation-predictions-template.csv
+/december-chart-inputs.csv
+
+# Spotter's own assessment document - not mine to republish.
+/freight-rate-ml-assessment.pdf
