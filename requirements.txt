@@ -1,12 +1,15 @@
-# scorer (as supplied with the assessment)
-matplotlib>=3.8,<4
-numpy>=1.26,<3
-pandas>=2.0,<3
-
 # model
 lightgbm>=4.3,<5
 scikit-learn>=1.4,<2
+numpy>=1.26,<3
+pandas>=2.0,<3
 scipy>=1.11,<2
+
+# charts, and the assessment's own scorer
+matplotlib>=3.8,<4
 
 # report generation only
 reportlab>=4.0,<6
+
+# tests only
+pytest>=8.0

@@ -18,6 +18,13 @@ from src.model import CROSS_SECTION, FreightRateModel, day_design
 from train_predict import build_december_frame
 
 DATA = Path("data")
+REQUIRED = ["train_test.csv", "validation.csv",
+            "validation_predictions_template.csv", "december_chart_inputs.csv"]
+
+pytestmark = pytest.mark.skipif(
+    not all((DATA / name).is_file() for name in REQUIRED),
+    reason=f"put the four assessment CSVs in {DATA}/ - see the README",
+)
 
 
 @pytest.fixture(scope="module")

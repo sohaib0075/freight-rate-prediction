@@ -45,7 +45,18 @@ memorise *which month* a day belongs to and then fan out on a new month.
 ~1.3% of `posted_rate` labels are corrupted by a large multiplicative factor
 and are detected out-of-fold and dropped before the final fit.
 
-## Quick start
+## Setup
+
+This repository holds the solution code, not the assessment's data or its
+scorer. To run it, drop the four supplied CSVs into `data/` under the names the
+task's own README uses, and keep `score.py` at the repository root:
+
+```
+data/train_test.csv                      (train-test.csv)
+data/validation.csv                      (validation.csv)
+data/validation_predictions_template.csv (validation-predictions-template.csv)
+data/december_chart_inputs.csv           (december-chart-inputs.csv)
+```
 
 ```bash
 python -m pip install -r requirements.txt
@@ -72,11 +83,14 @@ times):
 python evaluate.py && python report/screened_metrics.py
 ```
 
-To reproduce the day-level specification choice, and the report:
+To reproduce the day-level specification choice (the cached level series ships
+with the repo, so this runs without refitting; add `--refresh` to rebuild it):
 
 ```bash
 python experiments/day_level_backtest.py
 ```
+
+To rebuild the report itself:
 
 ```bash
 python report/make_figures.py && python report/make_report.py
@@ -93,8 +107,7 @@ evaluate.py                        forward-holdout and rolling-origin validation
 experiments/day_level_backtest.py  how the day-level specification was chosen
 report/                            figures, metrics and the written report
 tests/test_pipeline.py             smoke and invariant checks (`pytest tests -q`)
-docs/original_task_readme.md       the readme supplied with the assessment
-data/                              the supplied CSVs, under the task's own names
+data/                              where the supplied CSVs go (not tracked here)
 ```
 
 `train_predict.py` reads `data/december_chart_inputs.csv` and writes the same
@@ -102,6 +115,9 @@ file back with `predicted_rate` filled, so re-running it is safe.
 
 ## Requirements
 
-Python 3.11+, `lightgbm`, `scikit-learn`, `pandas`, `numpy`, `scipy`,
-`matplotlib`; `reportlab` and `pypdf` only for rebuilding the report PDF.
-`requirements.txt` pins them.
+Python 3.11+, `lightgbm`, `scikit-learn`, `pandas`, `numpy`, `scipy` and
+`matplotlib`; `reportlab` only for rebuilding the report PDF, `pytest` only for
+the tests. `requirements.txt` pins them.
+
+`validation_predictions.csv` and `scorer_results/candidate_december.png` in
+this repository are the submitted outputs of the run described above.

@@ -6,12 +6,13 @@ __pycache__/
 .venv/
 venv/
 
-# The supplied files as downloaded.  data/ holds byte-identical copies under
-# the names the task's own instructions use, so these are not tracked twice.
+# Spotter's own material - the dataset, the scorer and the brief.  The brief
+# asks for "solution code, dependencies, and run instructions", so that is what
+# this repository carries; see the README for where to drop the CSVs.
+/data/
+/score.py
 /train-test.csv
 /validation.csv
 /validation-predictions-template.csv
 /december-chart-inputs.csv
-
-# Spotter's own assessment document - not mine to republish.
 /freight-rate-ml-assessment.pdf
