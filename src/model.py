@@ -11,9 +11,10 @@ generated from the recorded distance, noise included.
 
 Why the split
 -------------
-Variance in ``y`` decomposes into a *within-day* part (sd ~= 0.018, which load
-is it) and a *day-level* part (sd ~= 0.030, what was the market doing that
-day).  The two need different machinery:
+Once load-level structure is accounted for, what is left of ``y`` decomposes
+into a *within-day* part (residual sd ~= 0.018 - which load is it) and a
+*day-level* part (sd ~= 0.030 - what was the market doing that day).  The two
+need different machinery:
 
 * **Within-day** is a rich, non-linear, interaction-heavy function of distance,
   equipment, geography and the row's own market/quote readings.  That is what
@@ -21,22 +22,24 @@ day).  The two need different machinery:
 
 * **Day-level** has to *extrapolate*.  The prediction window (Nov-Dec 2025)
   lies entirely outside the training dates, and the day-level series contains a
-  genuine upward drift of about +0.021 log-units per 100 days on top of
-  ``market_index``.  Trees cannot extrapolate a trend at all, and - worse -
-  when given day aggregates such as the daily mean quote signal they memorise
-  *which month* a day belongs to and then fan out wildly on a new month whose
-  aggregates sit in a narrow band.  (Measured directly: handing the daily quote
-  mean to the trees triples the median error on an August holdout, and November
-  and December have exactly the narrow-band shape that triggers it.)
+  genuine upward drift on top of ``market_index``.  Trees cannot extrapolate a
+  trend at all, and - worse - when given day aggregates such as the daily mean
+  quote signal they memorise *which month* a day belongs to and then fan out
+  wildly on a new month whose aggregates sit in a narrow band.  (Measured
+  directly: handing the daily quote mean to the trees triples the median error
+  on an August holdout, and November and December have exactly the narrow-band
+  shape that triggers it.)
 
   So the day level is a small weighted least-squares fit instead, on
 
-      level ~ log(market_index) + quote_signal_mean + day_of_month
-              + day_of_week + calendar_time
+      level ~ log(market_index) + mean quote_signal + calendar_time
 
-  Nine coefficients, all of them monotone in their input, which is safe to
-  evaluate two months past the end of the data.  The drift coefficient is
-  estimated at +0.00021/day with a heteroskedasticity-robust t of ~36-44.
+  Four coefficients, each linear in its input, which is safe to evaluate two
+  months past the end of the data.  Fitted on the full ten months the drift
+  comes out at +0.00015/day (+0.0147 per 100 days, ~5.5%/year) with a
+  heteroskedasticity-robust t of 24.  Day-of-week and day-of-month are handled
+  by the trees instead: they are small cycles that repeat unchanged in any
+  future month, so a tree generalises them perfectly.
 
 Fitting order
 -------------
@@ -65,8 +68,10 @@ from . import features as F
 
 ORIGIN = F.ORIGIN
 
-# Tuned on a Jan-Aug / Sep-Oct forward holdout.  Shallow trees clearly beat
-# deep ones here: most of the cross-sectional signal is smooth and low-order.
+# Tuned on forward holdouts, scored on *within-day* error so the day-level
+# forecasting problem and the corrupted labels cannot muddy the comparison.
+# 63 leaves is the plateau: 31 underfits once the day level is out of the
+# target, and 127+ starts memorising.
 LGB_PARAMS = dict(
     objective="regression",
     metric="l2",
@@ -94,8 +99,8 @@ DATE_BLIND = [
 ]
 
 # The cross-sectional model.  It adds the row's *deviation* from the day's
-# market index and quote signal - both are real within-day effects (a load
-# quoted 1 sd above its day runs ~0.3% dearer) - plus day-of-week and
+# market index and quote signal - both are real within-day effects (a load one
+# sd above its own day runs 0.2-0.3% dearer) - plus day-of-week and
 # day-of-month, which are safe for trees because they are small repeating
 # cycles that recur unchanged in any future month.  It never sees the day
 # *levels* themselves; those belong to the day-level regression.
