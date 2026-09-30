@@ -391,8 +391,11 @@ def main() -> None:
     story += bullets([
         "<b>The drift is one year of one series.</b> Ten months cannot separate a secular trend "
         "from slow annual seasonality; the linear term is the defensible reading and the backtest "
-        "supports it out to 61 days, but a second year of history would settle it. The exposure "
-        "is bounded: over the Nov&ndash;Dec window the drift term contributes about 1.3%.",
+        "supports it out to 61 days, but a second year of history would settle it. The genuinely "
+        "extrapolated part is small &mdash; past the last training date the drift adds 0.46% by "
+        "1 December and 0.90% by 31 December &mdash; so even a badly wrong slope costs under a "
+        "percent. The larger job the term does, placing the level correctly <i>within</i> the "
+        "fitted range, is interpolation and is well identified.",
         "<b>The day level still has 0.008&ndash;0.010 of unforecastable wobble.</b> That is now "
         "comparable to the entire within-day error, so it is where the next real gain is &mdash; "
         "most likely from market features the dataset does not contain (fuel, capacity, holidays) "
